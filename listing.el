@@ -1,11 +1,11 @@
-;;; listing.el --- show columnized view of list entries
+;;; listing.el --- show columnized view of list elements
 
 ;; Copyright (C) 2010  Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100605
-;; Version: 0.1
+;; Updated: 20100612
+;; Version: 0.1.1
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: 
 
