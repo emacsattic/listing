@@ -91,7 +91,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	       (concat
 		(format-header-button (car col)
 		 :type 'listing-header
-		 :columns columns)
+		 :columns columns
+		 'help-echo (concat "mouse-1: Sort by "
+				    (downcase (car col))))
 		(propertize " "
 		 'display `(space :align-to ,(1+ (incf len (nth 2 col))))
 		 'face 'fixed-pitch)))
