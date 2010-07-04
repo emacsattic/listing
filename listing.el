@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
 ;; Updated: 20100704
-;; Version: 0.1.1+
+;; Version: 0.1.2
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: 
 
@@ -180,6 +180,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defvar listing-buffer-element nil)
 (make-variable-buffer-local 'listing-buffer-element)
+
+(defvar listing-buffer-element-type nil)
+(make-variable-buffer-local 'listing-buffer-element-type)
 
 (provide 'listing)
 ;;; listing.el ends here
