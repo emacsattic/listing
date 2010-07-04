@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100612
-;; Version: 0.1.1
+;; Updated: 20100704
+;; Version: 0.1.1+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: 
 
@@ -74,6 +74,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (funcall (or mode 'listing-mode))
       (setq header-line-format (listing-format-header columns))
       (set-buffer-modified-p nil)
+      (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
 (define-button-type 'listing-header
