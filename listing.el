@@ -40,7 +40,8 @@
     (suppress-keymap map)
     (define-key map [?v] 'listing-view-element)
     (define-key map [?m] 'listing-mark-element)
-    map))
+    map)
+  "Keymap for Listing mode.")
 
 (define-derived-mode listing-mode special-mode nil
   "Parent major mode from which other listing modes derive."
