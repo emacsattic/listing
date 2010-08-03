@@ -28,7 +28,7 @@
 
 ;; This package implements the generic `listing-mode' which another mode
 ;; can derive from to display a columnized list of the elements of a list.
-;; The elements should be some kind of composed values such as a plist.
+;; The elements should be some kind of composed values.
 
 ;;; Code:
 
@@ -104,10 +104,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (concat "  "
 	    (mapconcat
 	     (lambda (col)
-	       (let* ((acc (cadr col))
-		      (val (typecase acc
-			     (keyword (plist-get value acc))
-			     (function (funcall acc value)))))
+	       (let ((val (funcall (cadr col) value)))
 		 (concat
 		  (cond ((null val) "-?-")
 			((stringp val) val)
