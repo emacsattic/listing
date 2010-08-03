@@ -60,7 +60,7 @@ COLUMN is the column by which the elements are sorted initialy.  COLUMNS
 specifies what parts are inserted and can optionally be used to format
 the output of each column individually. It has the form:
 
-  ((HEADER ACCESSOR LENGTH)...)
+  ((HEADER LENGTH ACCESSOR)...)
 
 HEADER is a string used as label in the header line for the respective
 column.  ACCESSOR is a function used to extract the value for the
@@ -96,7 +96,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		 'help-echo (concat "mouse-1: Sort by "
 				    (downcase (car col))))
 		(propertize " "
-		 'display `(space :align-to ,(1+ (incf len (nth 2 col))))
+		 'display `(space :align-to ,(1+ (incf len (cadr col))))
 		 'face 'fixed-pitch)))
 	     columns " "))))
 
@@ -105,13 +105,13 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (concat "  "
 	    (mapconcat
 	     (lambda (col)
-	       (let ((val (funcall (cadr col) value)))
+	       (let ((val (funcall (caddr col) value)))
 		 (concat
 		  (cond ((null val) "-?-")
 			((stringp val) val)
 			(t (prin1-to-string val)))
 		  (propertize "\037"
-		   'display `(space :align-to ,(1+ (incf len (nth 2 col))))
+		   'display `(space :align-to ,(1+ (incf len (cadr col))))
 		   ))))
 	     columns " ")
 	    "\n")))
