@@ -33,6 +33,7 @@
 ;;; Code:
 
 (require 'header-button)
+(require 'map-progress)
 
 (defvar listing-mode-map
   (let ((map (make-sparse-keymap)))
@@ -119,14 +120,13 @@ to be inserted.  LENGTH defined the minimal length of the column."
   value) ; TODO
 
 (defun listing-insert (columns value)
-  (let ((i 0) (progress (make-progress-reporter
-			 "Inserting elements..." 0 (length value))))
-    (dolist (elt value)
-      (progress-reporter-update progress (incf i))
-      (insert (propertize (listing-format-element columns elt)
-			  :listing-element elt
-			  'point-entered 'listing-line-entered)))
-    (progress-reporter-done progress)))
+  (mapc-with-progress-reporter
+   "Inserting elements..."
+   (lambda (elt)
+     (insert (propertize (listing-format-element columns elt)
+			 :listing-element elt
+			 'point-entered 'listing-line-entered)))
+   value))
 
 (defun listing-sort (columns column &optional from to)
   (interactive
