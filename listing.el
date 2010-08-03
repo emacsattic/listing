@@ -4,10 +4,10 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100704
-;; Version: 0.1.2
+;; Updated: 20100803
+;; Version: 0.1.2+
 ;; Homepage: https://github.com/tarsius/listing
-;; Keywords: 
+;; Keywords: convenience
 
 ;; This file is not part of GNU Emacs.
 
