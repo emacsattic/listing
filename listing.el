@@ -72,7 +72,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (with-current-buffer (or buffer (current-buffer))
     (let ((inhibit-read-only t))
       (erase-buffer)
-      (listing-insert columns (listing-match predicates value))
+      (listing-insert columns
+		      (listing-match (or predicates '(identity)) value))
       (listing-sort columns column)
       (funcall (or mode 'listing-mode))
       (setq header-line-format (listing-format-header columns))
@@ -119,7 +120,14 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	    "\n")))
 
 (defun listing-match (predicates value)
-  value) ; TODO
+  (mapcan (lambda (elt)
+	    (let (failed)
+	      (while (and predicates (not failed))
+		(unless (funcall (pop predicates) elt)
+		  (setq failed t)))
+	      (unless failed
+		(list elt))))
+	  value))
 
 (defun listing-insert (columns value)
   (mapc-with-progress-reporter
