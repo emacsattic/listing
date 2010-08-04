@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
 ;; Updated: 20100804
-;; Version: 0.1.2+
+;; Version: 0.1.3
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -52,7 +52,7 @@
 	buffer-read-only t
 	x-stretch-cursor nil))
 
-(defun listing-create (value buffer mode columns column predicates)
+(defun listing-create (value buffer mode columns column format predicates)
   "Insert elements of the list VALUE into BUFFER, one per line.
 
 MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
@@ -77,6 +77,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (listing-sort columns column)
       (funcall (or mode 'listing-mode))
       (setq header-line-format (listing-format-header columns))
+      (when format
+	(setq listing-format-element-function format))
       (set-buffer-modified-p nil)
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
@@ -133,7 +135,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (mapc-with-progress-reporter
    "Inserting elements..."
    (lambda (elt)
-     (insert (propertize (listing-format-element columns elt)
+     (insert (propertize (funcall (or listing-format-element-function
+				      'listing-format-element)
+				  columns elt)
 			 :listing-element elt
 			 'point-entered 'listing-line-entered)))
    value))
@@ -184,6 +188,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defvar listing-view-element-function nil)
 (make-variable-buffer-local 'listing-view-element-function)
+
+(defvar listing-format-element-function nil)
+(make-variable-buffer-local 'listing-format-element-function)
 
 (defvar listing-buffer-element nil)
 (make-variable-buffer-local 'listing-buffer-element)
