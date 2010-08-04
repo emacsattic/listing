@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100803
+;; Updated: 20100804
 ;; Version: 0.1.2+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -49,7 +49,8 @@
   (use-local-map listing-mode-map)
   (hl-line-mode 1)
   (setq truncate-lines t
-	buffer-read-only t))
+	buffer-read-only t
+	x-stretch-cursor nil))
 
 (defun listing-create (value buffer mode columns column predicates)
   "Insert elements of the list VALUE into BUFFER, one per line.
