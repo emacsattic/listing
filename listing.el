@@ -104,25 +104,32 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		 'help-echo (concat "mouse-1: Sort by "
 				    (downcase (car col))))
 		(propertize " "
-		 'display `(space :align-to ,(1+ (incf len (cadr col))))
+		 'display `(space :align-to ,(incf len (cadr col)))
 		 'face 'fixed-pitch)))
 	     columns " "))))
 
 (defun listing-format-element (columns value)
-  (let ((len 2))
-    (concat "  "
-	    (mapconcat
-	     (lambda (col)
-	       (let ((val (funcall (caddr col) value)))
-		 (concat
-		  (cond ((null val) "-?-")
+  (let ((elt-len 2)
+	(str-len 2)
+	(elt-str "  "))
+    (while columns
+      (let* ((col (pop columns))
+	     (val (funcall (caddr col) value))
+	     (str (cond ((null val) "-?-")
 			((stringp val) val)
-			(t (prin1-to-string val)))
-		  (propertize "\037"
-		   'display `(space :align-to ,(1+ (incf len (cadr col))))
-		   ))))
-	     columns " ")
-	    "\n")))
+			(t (prin1-to-string val)))))
+	(incf elt-len (1+ (cadr col)))
+	(incf str-len (1+ (length str)))
+	(setq elt-str (concat elt-str str))
+	(when columns
+	  (setq elt-str
+		(concat elt-str
+			(propertize "\037" 'display
+			 (list 'space :width
+			       (let ((n (1+ (max 0 (- elt-len str-len)))))
+				 (incf str-len n)
+				 n))))))))
+    (concat elt-str "\n")))
 
 (defun listing-match (predicates value)
   (mapcan (lambda (elt)
