@@ -164,28 +164,28 @@ to be inserted.  LENGTH defined the minimal length of the column."
 			(or to (point-max)))))
 
 (defun listing-line-entered (old new)
-  (when (and listing-view-element-follow-p
-	     (not (bound-and-true-p isearch-mode)))
-    (let ((old-elt (get-text-property old :listing-element))
-	  (new-elt (get-text-property new :listing-element))
-	  window buffer)
-      (unless (eq old-elt new-elt)
-	(walk-windows (lambda (win)
-			(with-current-buffer (window-buffer win)
-			  (when (and listing-buffer-element (not window))
-			    (setq window win)))))
-	(if window
-	    ;; Motion hook functions get called twice by design.  In case
-	    ;; this is the second time this function is called we don't
-	    ;; have to do anything.
-	    (unless (equal new-elt (with-current-buffer
-				       (setq buffer (window-buffer window))
-				     listing-buffer-element))
-	      (listing-view-element)
-	      (kill-buffer buffer))
-	  ;; Here we can't prevent the message from being shown twice.
-	  (let ((message-log-max nil))
-	    (funcall listing-preview-element-function new-elt)))))))
+  (let ((old-elt (get-text-property old :listing-element))
+	(new-elt (get-text-property new :listing-element))
+	window buffer)
+    (when (and listing-view-element-follow-p
+	       (not (eq old-elt new-elt))
+	       (not (bound-and-true-p isearch-mode)))
+      (walk-windows (lambda (win)
+		      (with-current-buffer (window-buffer win)
+			(when (and listing-buffer-element (not window))
+			  (setq window win)))))
+      (if window
+	  ;; Motion hook functions get called twice by design.  In case
+	  ;; this is the second time this function is called we don't
+	  ;; have to do anything.
+	  (unless (equal new-elt (with-current-buffer
+				     (setq buffer (window-buffer window))
+				   listing-buffer-element))
+	    (listing-view-element)
+	    (kill-buffer buffer))
+	;; Here we can't prevent the message from being shown twice.
+	(let ((message-log-max nil))
+	  (funcall listing-preview-element-function new-elt))))))
 
 (defun listing-view-element ()
   (interactive)
