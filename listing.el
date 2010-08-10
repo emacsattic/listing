@@ -71,7 +71,8 @@ respective column from each of the elements of VALUE.  It may also be a
 keyword in which case function `plist-get' is used to extract the value
 to be inserted.  LENGTH defined the minimal length of the column."
   (with-current-buffer (or buffer (current-buffer))
-    (let ((inhibit-read-only t))
+    (let ((inhibit-read-only t)
+	  (inhibit-point-motion-hooks t))
       (erase-buffer)
       (listing-insert columns
 		      (listing-match (or predicates '(identity)) value))
