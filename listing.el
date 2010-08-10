@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100804
-;; Version: 0.1.3
+;; Updated: 20100810
+;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -52,7 +52,8 @@
 	buffer-read-only t
 	x-stretch-cursor nil))
 
-(defun listing-create (value buffer mode columns column format predicates)
+(defun listing-create (value buffer mode columns
+			     &optional column format predicates)
   "Insert elements of the list VALUE into BUFFER, one per line.
 
 MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
