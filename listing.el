@@ -164,28 +164,32 @@ to be inserted.  LENGTH defined the minimal length of the column."
 			(or to (point-max)))))
 
 (defun listing-line-entered (old new)
-  (let ((old-elt (get-text-property old :listing-element))
-	(new-elt (get-text-property new :listing-element))
-	window buffer)
-    (unless (eq old-elt new-elt)
-      (walk-windows (lambda (win)
-		      (with-current-buffer (window-buffer win)
-			(when (and listing-buffer-element (not window))
-			  (setq window win)))))
-      (when window
-	(setq buffer (window-buffer window))
-	(listing-view-element)
-	;; Motion hook functions get called twice by design.  In case this
-	;; is the second time this function is called it would be wrong to
-	;; kill the element buffer.
-	(unless (equal new-elt (with-current-buffer buffer
-				 listing-buffer-element))
-	  (kill-buffer buffer))))))
+  (when listing-view-element-follow-p
+    (let ((old-elt (get-text-property old :listing-element))
+	  (new-elt (get-text-property new :listing-element))
+	  window buffer)
+      (unless (eq old-elt new-elt)
+	(walk-windows (lambda (win)
+			(with-current-buffer (window-buffer win)
+			  (when (and listing-buffer-element (not window))
+			    (setq window win)))))
+	(when window
+	  (setq buffer (window-buffer window))
+	  (listing-view-element)
+	  ;; Motion hook functions get called twice by design.  In case this
+	  ;; is the second time this function is called it would be wrong to
+	  ;; kill the element buffer.
+	  (unless (equal new-elt (with-current-buffer buffer
+				   listing-buffer-element))
+	    (kill-buffer buffer)))))))
 
 (defun listing-view-element ()
   (interactive)
   (funcall listing-view-element-function
 	   (get-text-property (point) :listing-element)))
+
+(defvar listing-view-element-follow-p nil)
+(make-variable-buffer-local 'listing-view-element-follow-p)
 
 (defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
