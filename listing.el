@@ -137,8 +137,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (mapc-with-progress-reporter
    "Inserting elements..."
    (lambda (elt)
-     (insert (propertize (funcall (or listing-format-element-function
-				      'listing-format-element)
+     (insert (propertize (funcall listing-format-element-function
 				  columns elt)
 			 :listing-element elt
 			 'point-entered 'listing-line-entered)))
@@ -188,10 +187,10 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (funcall listing-view-element-function
 	   (get-text-property (point) :listing-element)))
 
-(defvar listing-view-element-function nil)
+(defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
 
-(defvar listing-format-element-function nil)
+(defvar listing-format-element-function 'listing-format-element)
 (make-variable-buffer-local 'listing-format-element-function)
 
 (defvar listing-buffer-element nil)
