@@ -39,7 +39,6 @@
   (let ((map (make-sparse-keymap)))
     (suppress-keymap map)
     (define-key map [?v] 'listing-view-element)
-    (define-key map [?m] 'listing-mark-element)
     map)
   "Keymap for Listing mode.")
 
