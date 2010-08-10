@@ -174,15 +174,18 @@ to be inserted.  LENGTH defined the minimal length of the column."
 			(with-current-buffer (window-buffer win)
 			  (when (and listing-buffer-element (not window))
 			    (setq window win)))))
-	(when window
-	  ;; Motion hook functions get called twice by design.  In case this
-	  ;; is the second time this function is called we don't have to do
-	  ;; anything.
-	  (unless (equal new-elt (with-current-buffer
-				     (setq buffer (window-buffer window))
-				   listing-buffer-element))
-	    (listing-view-element)
-	    (kill-buffer buffer)))))))
+	(if window
+	    ;; Motion hook functions get called twice by design.  In case
+	    ;; this is the second time this function is called we don't
+	    ;; have to do anything.
+	    (unless (equal new-elt (with-current-buffer
+				       (setq buffer (window-buffer window))
+				     listing-buffer-element))
+	      (listing-view-element)
+	      (kill-buffer buffer))
+	  ;; Here we can't prevent the message from being shown twice.
+	  (let ((message-log-max nil))
+	    (funcall listing-preview-element-function new-elt)))))))
 
 (defun listing-view-element ()
   (interactive)
@@ -194,6 +197,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
+
+(defvar listing-preview-element-function 'ignore)
+(make-variable-buffer-local 'listing-preview-element-function)
 
 (defvar listing-format-element-function 'listing-format-element)
 (make-variable-buffer-local 'listing-format-element-function)
