@@ -175,13 +175,13 @@ to be inserted.  LENGTH defined the minimal length of the column."
 			  (when (and listing-buffer-element (not window))
 			    (setq window win)))))
 	(when window
-	  (setq buffer (window-buffer window))
-	  (listing-view-element)
 	  ;; Motion hook functions get called twice by design.  In case this
-	  ;; is the second time this function is called it would be wrong to
-	  ;; kill the element buffer.
-	  (unless (equal new-elt (with-current-buffer buffer
+	  ;; is the second time this function is called we don't have to do
+	  ;; anything.
+	  (unless (equal new-elt (with-current-buffer
+				     (setq buffer (window-buffer window))
 				   listing-buffer-element))
+	    (listing-view-element)
 	    (kill-buffer buffer)))))))
 
 (defun listing-view-element ()
