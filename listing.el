@@ -79,7 +79,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		      (listing-match (or predicates '(identity)) value))
       (listing-sort columns column)
       (funcall (or mode 'listing-mode))
-      (setq header-line-format (listing-format-header columns))
+      (setq header-line-format (listing-format-header columns)
+	    listing-buffer-columns columns)
       (when format
 	(setq listing-format-element-function format))
       (set-buffer-modified-p nil)
@@ -89,7 +90,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (define-button-type 'listing-header
   :supertype 'header
   :action (lambda (button)
-	    (listing-sort (header-button-get button :columns)
+	    (listing-sort listing-buffer-columns
 			  (header-button-label button))))
 
 (defun listing-format-header (columns)
@@ -100,7 +101,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	       (concat
 		(format-header-button (car col)
 		 :type 'listing-header
-		 :columns columns
 		 'help-echo (concat "mouse-1: Sort by "
 				    (downcase (car col))))
 		(propertize " "
@@ -217,6 +217,9 @@ This allows all listing elements to be seen."
 
 (defvar listing-buffer-element-type nil)
 (make-variable-buffer-local 'listing-buffer-element-type)
+
+(defvar listing-buffer-columns nil)
+(make-variable-buffer-local 'listing-buffer-columns)
 
 (provide 'listing)
 ;;; listing.el ends here
