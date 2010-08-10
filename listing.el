@@ -156,7 +156,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	(regexp "^. "))
     (while columns
       (if (equal (caar columns) column)
-	  (setq regexp (concat regexp "\\([^\037]+\\)\037.*$")
+	  (setq regexp (concat regexp "\\([^\037]+\\)\037[^\n]*\n")
 		columns nil)
 	(setq regexp (concat regexp "[^\037]+\037")
 	      columns (cdr columns))))
