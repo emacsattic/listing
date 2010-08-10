@@ -164,7 +164,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 			(or to (point-max)))))
 
 (defun listing-line-entered (old new)
-  (when listing-view-element-follow-p
+  (when (and listing-view-element-follow-p
+	     (not (bound-and-true-p isearch-mode)))
     (let ((old-elt (get-text-property old :listing-element))
 	  (new-elt (get-text-property new :listing-element))
 	  window buffer)
