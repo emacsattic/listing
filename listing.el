@@ -77,8 +77,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (erase-buffer)
       (listing-insert columns
 		      (listing-match (or predicates '(identity)) value))
-      (listing-sort columns column)
       (funcall (or mode 'listing-mode))
+      (listing-sort columns column)
       (setq header-line-format (listing-format-header columns)
 	    listing-buffer-columns columns)
       (when format
@@ -160,9 +160,12 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		columns nil)
 	(setq regexp (concat regexp "[^\037]+\037")
 	      columns (cdr columns))))
-    (sort-regexp-fields nil regexp "\\1"
+    (sort-regexp-fields (equal column listing-buffer-sort-column)
+			regexp "\\1"
 			(or from (point-min))
-			(or to (point-max)))))
+			(or to (point-max)))
+    (setq listing-buffer-sort-column
+	  (if (equal column listing-buffer-sort-column) nil column))))
 
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old :listing-element))
@@ -220,6 +223,9 @@ This allows all listing elements to be seen."
 
 (defvar listing-buffer-columns nil)
 (make-variable-buffer-local 'listing-buffer-columns)
+
+(defvar listing-buffer-sort-column nil)
+(make-variable-buffer-local 'listing-buffer-sort-column)
 
 (provide 'listing)
 ;;; listing.el ends here
