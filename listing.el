@@ -39,6 +39,7 @@
   (let ((map (make-sparse-keymap)))
     (suppress-keymap map)
     (define-key map [?v] 'listing-view-element)
+    (define-key map [?w] 'listing-widen)
     map)
   "Keymap for Listing mode.")
 
@@ -49,7 +50,8 @@
   (hl-line-mode 1)
   (setq truncate-lines t
 	buffer-read-only t
-	x-stretch-cursor nil))
+	x-stretch-cursor nil
+	buffer-invisibility-spec nil))
 
 (defun listing-create (value buffer mode columns
 			     &optional column format predicates)
@@ -191,6 +193,12 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (interactive)
   (funcall listing-view-element-function
 	   (get-text-property (point) :listing-element)))
+
+(defun listing-widen (&optional widen)
+  "Remove restrictions (narrowing) from current listing buffer.
+This allows all listing elements to be seen."
+  (interactive)
+  (setq buffer-invisibility-spec nil))
 
 (defvar listing-view-element-follow-p nil)
 (make-variable-buffer-local 'listing-view-element-follow-p)
