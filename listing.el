@@ -169,6 +169,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	window buffer)
     (when (and listing-view-element-follow-p
 	       (not (eq old-elt new-elt))
+	       (not (invisible-p new))
 	       (not (bound-and-true-p isearch-mode)))
       (walk-windows (lambda (win)
 		      (with-current-buffer (window-buffer win)
