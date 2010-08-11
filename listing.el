@@ -86,49 +86,54 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
+;;; Local Variables.
+
+(defvar listing-view-element-follow-p nil)
+(make-variable-buffer-local 'listing-view-element-follow-p)
+
+(defvar listing-view-element-function 'ignore)
+(make-variable-buffer-local 'listing-view-element-function)
+
+(defvar listing-preview-element-function 'ignore)
+(make-variable-buffer-local 'listing-preview-element-function)
+
+(defvar listing-format-element-function 'listing-format-element)
+(make-variable-buffer-local 'listing-format-element-function)
+
+(defvar listing-buffer-columns nil)
+(make-variable-buffer-local 'listing-buffer-columns)
+
+(defvar listing-buffer-sort-column nil)
+(make-variable-buffer-local 'listing-buffer-sort-column)
+
+(defvar listing-buffer-element nil)
+(make-variable-buffer-local 'listing-buffer-element)
+
+(defvar listing-buffer-element-type nil)
+(make-variable-buffer-local 'listing-buffer-element-type)
+
+;;; Buttons.
+
 (define-button-type 'listing-header
   :supertype 'header
   :action (lambda (button)
 	    (listing-sort listing-buffer-columns
 			  (header-button-label button))))
 
-(defun listing-format-header (columns)
-  (let ((len 2))
-    (concat "   "
-	    (mapconcat
-	     (lambda (col)
-	       (concat
-		(format-header-button (car col)
-		 :type 'listing-header
-		 'help-echo (concat "mouse-1: Sort by "
-				    (downcase (car col))))
-		(propertize " "
-		 'display `(space :align-to ,(incf len (cadr col)))
-		 'face 'fixed-pitch)))
-	     columns " "))))
+;;; Commands.
 
-(defun listing-format-element (columns value)
-  (let ((elt-len 2)
-	(str-len 2)
-	(elt-str "  "))
-    (while columns
-      (let* ((col (pop columns))
-	     (val (funcall (caddr col) value))
-	     (str (cond ((null val) "-?-")
-			((stringp val) val)
-			(t (prin1-to-string val)))))
-	(incf elt-len (1+ (cadr col)))
-	(incf str-len (1+ (length str)))
-	(setq elt-str (concat elt-str str))
-	(when columns
-	  (setq elt-str
-		(concat elt-str
-			(propertize "\037" 'display
-			 (list 'space :width
-			       (let ((n (1+ (max 0 (- elt-len str-len)))))
-				 (incf str-len n)
-				 n))))))))
-    (concat elt-str "\n")))
+(defun listing-view-element ()
+  (interactive)
+  (funcall listing-view-element-function
+	   (get-text-property (point) :listing-element)))
+
+(defun listing-widen (&optional widen)
+  "Remove restrictions (narrowing) from current listing buffer.
+This allows all listing elements to be seen."
+  (interactive)
+  (setq buffer-invisibility-spec nil))
+
+;;; List Functions.
 
 (defun listing-insert (columns value)
   (mapc-with-progress-reporter
@@ -163,6 +168,46 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (setq listing-buffer-sort-column
 	  (if (equal column listing-buffer-sort-column) nil column))))
 
+;;; Element Functions.
+
+(defun listing-format-element (columns value)
+  (let ((elt-len 2)
+	(str-len 2)
+	(elt-str "  "))
+    (while columns
+      (let* ((col (pop columns))
+	     (val (funcall (caddr col) value))
+	     (str (cond ((null val) "-?-")
+			((stringp val) val)
+			(t (prin1-to-string val)))))
+	(incf elt-len (1+ (cadr col)))
+	(incf str-len (1+ (length str)))
+	(setq elt-str (concat elt-str str))
+	(when columns
+	  (setq elt-str
+		(concat elt-str
+			(propertize "\037" 'display
+			 (list 'space :width
+			       (let ((n (1+ (max 0 (- elt-len str-len)))))
+				 (incf str-len n)
+				 n))))))))
+    (concat elt-str "\n")))
+
+(defun listing-format-header (columns)
+  (let ((len 2))
+    (concat "   "
+	    (mapconcat
+	     (lambda (col)
+	       (concat
+		(format-header-button (car col)
+		 :type 'listing-header
+		 'help-echo (concat "mouse-1: Sort by "
+				    (downcase (car col))))
+		(propertize " "
+		 'display `(space :align-to ,(incf len (cadr col)))
+		 'face 'fixed-pitch)))
+	     columns " "))))
+
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old :listing-element))
 	(new-elt (get-text-property new :listing-element))
@@ -187,41 +232,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	;; Here we can't prevent the message from being shown twice.
 	(let ((message-log-max nil))
 	  (funcall listing-preview-element-function new-elt))))))
-
-(defun listing-view-element ()
-  (interactive)
-  (funcall listing-view-element-function
-	   (get-text-property (point) :listing-element)))
-
-(defun listing-widen (&optional widen)
-  "Remove restrictions (narrowing) from current listing buffer.
-This allows all listing elements to be seen."
-  (interactive)
-  (setq buffer-invisibility-spec nil))
-
-(defvar listing-view-element-follow-p nil)
-(make-variable-buffer-local 'listing-view-element-follow-p)
-
-(defvar listing-view-element-function 'ignore)
-(make-variable-buffer-local 'listing-view-element-function)
-
-(defvar listing-preview-element-function 'ignore)
-(make-variable-buffer-local 'listing-preview-element-function)
-
-(defvar listing-format-element-function 'listing-format-element)
-(make-variable-buffer-local 'listing-format-element-function)
-
-(defvar listing-buffer-element nil)
-(make-variable-buffer-local 'listing-buffer-element)
-
-(defvar listing-buffer-element-type nil)
-(make-variable-buffer-local 'listing-buffer-element-type)
-
-(defvar listing-buffer-columns nil)
-(make-variable-buffer-local 'listing-buffer-columns)
-
-(defvar listing-buffer-sort-column nil)
-(make-variable-buffer-local 'listing-buffer-sort-column)
 
 (provide 'listing)
 ;;; listing.el ends here
