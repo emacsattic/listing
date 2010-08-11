@@ -107,11 +107,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-buffer-sort-column nil)
 (make-variable-buffer-local 'listing-buffer-sort-column)
 
-(defvar listing-buffer-element nil)
-(make-variable-buffer-local 'listing-buffer-element)
+(defvar listing-view-buffer-element nil)
+(make-variable-buffer-local 'listing-view-buffer-element)
 
-(defvar listing-buffer-element-type nil)
-(make-variable-buffer-local 'listing-buffer-element-type)
+(defvar listing-view-buffer-element-type nil)
+(make-variable-buffer-local 'listing-view-buffer-element-type)
 
 ;;; Buttons.
 
@@ -266,7 +266,7 @@ This allows all listing elements to be seen."
 	       (not (bound-and-true-p isearch-mode)))
       (walk-windows (lambda (win)
 		      (with-current-buffer (window-buffer win)
-			(when (and listing-buffer-element (not window))
+			(when (and listing-view-buffer-element (not window))
 			  (setq window win)))))
       (if window
 	  ;; Motion hook functions get called twice by design.  In case
@@ -274,7 +274,7 @@ This allows all listing elements to be seen."
 	  ;; have to do anything.
 	  (unless (equal new-elt (with-current-buffer
 				     (setq buffer (window-buffer window))
-				   listing-buffer-element))
+				   listing-view-buffer-element))
 	    (listing-view-element)
 	    (kill-buffer buffer))
 	;; Here we can't prevent the message from being shown twice.
