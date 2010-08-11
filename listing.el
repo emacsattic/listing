@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100810
+;; Updated: 20100811
 ;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -54,7 +54,7 @@
 	buffer-invisibility-spec nil))
 
 (defun listing-create (value buffer mode columns
-			     &optional column format predicates)
+			     &optional column format)
   "Insert elements of the list VALUE into BUFFER, one per line.
 
 MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
@@ -75,8 +75,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (let ((inhibit-read-only t)
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
-      (listing-insert columns
-		      (listing-match (or predicates '(identity)) value))
+      (listing-insert columns value)
       (funcall (or mode 'listing-mode))
       (listing-sort columns column)
       (setq header-line-format (listing-format-header columns)
@@ -130,16 +129,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 				 (incf str-len n)
 				 n))))))))
     (concat elt-str "\n")))
-
-(defun listing-match (predicates value)
-  (mapcan (lambda (elt)
-	    (let (failed)
-	      (while (and predicates (not failed))
-		(unless (funcall (pop predicates) elt)
-		  (setq failed t)))
-	      (unless failed
-		(list elt))))
-	  value))
 
 (defun listing-insert (columns value)
   (mapc-with-progress-reporter
