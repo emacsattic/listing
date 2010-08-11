@@ -154,7 +154,7 @@ This allows all listing elements to be seen."
 				       (car object))))))
   (let ((inhibit-read-only t)
 	(inhibit-point-motion-hooks t)
-	(regexp "^. "))
+	(regexp "^  "))
     (while columns
       (if (equal (caar columns) column)
 	  (setq regexp (concat regexp "\\([^\037]*\\)\037[^\n]*\n")
