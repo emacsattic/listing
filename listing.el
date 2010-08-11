@@ -94,8 +94,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-preview-element-function 'ignore)
 (make-variable-buffer-local 'listing-preview-element-function)
 
-(defvar listing-format-element-function 'listing-format-element)
-(make-variable-buffer-local 'listing-format-element-function)
+(defvar listing-element-font-function nil)
+(make-variable-buffer-local 'listing-element-font-function)
 
 (defvar listing-buffer-columns nil)
 (make-variable-buffer-local 'listing-buffer-columns)
@@ -137,13 +137,10 @@ This allows all listing elements to be seen."
 ;;; List Functions.
 
 (defun listing-insert (value)
-  (mapc-with-progress-reporter
-   "Inserting elements..."
-   (lambda (elt)
-     (insert (propertize (funcall listing-format-element-function elt)
-			 :listing-element elt
-			 'point-entered 'listing-line-entered)))
-   value))
+  (mapc-with-progress-reporter "Inserting elements..."
+			       (lambda (elt)
+				 (insert (listing-format-element elt)))
+			       value))
 
 (defun listing-sort (column &optional from to)
   (interactive
@@ -214,13 +211,24 @@ This allows all listing elements to be seen."
 ;;; Element Functions.
 
 (defun listing-format-element (elt)
-  (concat (mapconcat (lambda (col)
-		       (let ((val (funcall (caddr col) elt)))
-			 (if (stringp val)
-			     val
-			   (prin1-to-string val))))
-		     listing-buffer-columns "\037")
-	  "\n"))
+  (propertize
+   (concat (mapconcat
+	    (lambda (col)
+	      (let* ((face (when listing-element-font-function
+			     (funcall listing-element-font-function elt)))
+		     (value (funcall (caddr col) elt))
+		     (string (if (stringp value)
+				 (copy-sequence value)
+			       (prin1-to-string value))))
+		(when face
+		  (dotimes (i (length string))
+		    (unless (get-char-property i 'face string)
+		      (put-text-property i (1+ i) 'face face string))))
+		string))
+	    listing-buffer-columns "\037")
+	   "\n")
+   :listing-element elt
+   'point-entered 'listing-line-entered))
 
 (defun listing-format-header ()
   (listing-align-element
