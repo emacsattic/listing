@@ -77,13 +77,13 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
       (funcall (or mode 'listing-mode))
-      (setq listing-buffer-columns columns
-	    header-line-format (listing-format-header))
+      (setq listing-buffer-columns columns)
       (when format
 	(setq listing-format-element-function format))
       (listing-insert value)
       (listing-sort column)
       (set-buffer-modified-p nil)
+      (listing-align)
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
@@ -168,6 +168,11 @@ This allows all listing elements to be seen."
     (setq listing-buffer-sort-column
 	  (if (equal column listing-buffer-sort-column) nil column))))
 
+(defun listing-align ()
+  (setq header-line-format (listing-format-header))
+  (listing-map-lines (lambda (props start end)
+		       (listing-align-element))))
+
 (defun listing-categorize (predicate match not)
   (listing-map-lines
    (lambda (props start end)
@@ -207,44 +212,49 @@ This allows all listing elements to be seen."
 
 ;;; Element Functions.
 
-(defun listing-format-element (value)
-  (let ((columns listing-buffer-columns)
-	(elt-len 0)
-	(str-len 0)
-	(elt-str ""))
-    (while columns
-      (let* ((col (pop columns))
-	     (val (funcall (caddr col) value))
-	     (str (cond ((null val) "-?-")
-			((stringp val) val)
-			(t (prin1-to-string val)))))
-	(incf elt-len (1+ (cadr col)))
-	(incf str-len (1+ (length str)))
-	(setq elt-str (concat elt-str str))
-	(when columns
-	  (setq elt-str
-		(concat elt-str
-			(propertize "\037" 'display
-			 (list 'space :width
-			       (let ((n (1+ (max 0 (- elt-len str-len)))))
-				 (incf str-len n)
-				 n))))))))
-    (concat elt-str "\n")))
+(defun listing-format-element (elt)
+  (concat (mapconcat (lambda (col)
+		       (let ((val (funcall (caddr col) elt)))
+			 (cond ((null val) "-?-")
+			       ((stringp val) val)
+			       (t (prin1-to-string val)))))
+		     listing-buffer-columns "\037")
+	  "\n"))
 
 (defun listing-format-header ()
-  (let ((len 0))
-    (concat " "
-	    (mapconcat
-	     (lambda (col)
-	       (concat
-		(format-header-button (car col)
-		 :type 'listing-header
-		 'help-echo (concat "mouse-1: Sort by "
-				    (downcase (car col))))
-		(propertize " "
-		 'display `(space :align-to ,(incf len (cadr col)))
-		 'face 'fixed-pitch)))
-	     listing-buffer-columns " "))))
+  (listing-align-element
+   (concat " "
+	   (mapconcat (lambda (col)
+			(format-header-button
+			 (car col) :type 'listing-header
+			 'help-echo (concat "mouse-1: Sort by "
+					    (downcase (car col)))))
+		      listing-buffer-columns "\037"))))
+
+(defun listing-align-element (&optional object)
+  (let ((columns listing-buffer-columns)
+	(regexp "\\([^\037\n]*\\)\\(\037\\)?")
+	(line-length 0)
+	(text-length 0)
+	(obj-length 1)) ; for header line!
+    (while columns
+      (if (or (not object) (bufferp object))
+	  (re-search-forward regexp (line-end-position) t)
+	(string-match regexp object obj-length)
+	(incf obj-length (length (match-string 0 object))))
+      (let ((col (pop columns))
+	    (str (match-string 1 object)))
+	(incf line-length (1+ (cadr col)))
+	(incf text-length (1+ (length str)))
+	(when (match-string 2 object)
+	  (put-text-property
+	   (match-beginning 2) (match-end 2) 'display
+	   (list 'space :width
+		 (let ((space (1+ (max 0 (- line-length text-length)))))
+		   (incf text-length space)
+		   space))
+	   object))))
+    object))
 
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old :listing-element))
