@@ -157,9 +157,9 @@ This allows all listing elements to be seen."
 	(regexp "^"))
     (while columns
       (if (equal (caar columns) column)
-	  (setq regexp (concat regexp "\\([^\037]*\\)\037[^\n]*\n")
+	  (setq regexp (concat regexp "\\([^\037\n]*\\)\037?[^\n]*\n")
 		columns nil)
-	(setq regexp (concat regexp "[^\037]*\037")
+	(setq regexp (concat regexp "[^\037\n]*\037")
 	      columns (cdr columns))))
     (sort-regexp-fields (equal column listing-buffer-sort-column)
 			regexp "\\1"
