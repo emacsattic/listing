@@ -215,9 +215,9 @@ This allows all listing elements to be seen."
 (defun listing-format-element (elt)
   (concat (mapconcat (lambda (col)
 		       (let ((val (funcall (caddr col) elt)))
-			 (cond ((null val) "-?-")
-			       ((stringp val) val)
-			       (t (prin1-to-string val)))))
+			 (if (stringp val)
+			     val
+			   (prin1-to-string val))))
 		     listing-buffer-columns "\037")
 	  "\n"))
 
