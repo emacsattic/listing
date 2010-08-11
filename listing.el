@@ -48,6 +48,7 @@
   (kill-all-local-variables)
   (use-local-map listing-mode-map)
   (hl-line-mode 1)
+  (buffer-disable-undo)
   (setq truncate-lines t
 	buffer-read-only t
 	x-stretch-cursor nil
@@ -75,14 +76,13 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (let ((inhibit-read-only t)
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
-      (buffer-disable-undo)
-      (listing-insert columns value)
       (funcall (or mode 'listing-mode))
-      (listing-sort columns column)
-      (setq header-line-format (listing-format-header columns)
-	    listing-buffer-columns columns)
+      (setq listing-buffer-columns columns
+	    header-line-format (listing-format-header))
       (when format
 	(setq listing-format-element-function format))
+      (listing-insert value)
+      (listing-sort column)
       (set-buffer-modified-p nil)
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
@@ -118,8 +118,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (define-button-type 'listing-header
   :supertype 'header
   :action (lambda (button)
-	    (listing-sort listing-buffer-columns
-			  (header-button-label button))))
+	    (listing-sort (header-button-label button))))
 
 ;;; Commands.
 
@@ -136,17 +135,16 @@ This allows all listing elements to be seen."
 
 ;;; List Functions.
 
-(defun listing-insert (columns value)
+(defun listing-insert (value)
   (mapc-with-progress-reporter
    "Inserting elements..."
    (lambda (elt)
-     (insert (propertize (funcall listing-format-element-function
-				  columns elt)
+     (insert (propertize (funcall listing-format-element-function elt)
 			 :listing-element elt
 			 'point-entered 'listing-line-entered)))
    value))
 
-(defun listing-sort (columns column &optional from to)
+(defun listing-sort (column &optional from to)
   (interactive
    (when last-input-event
      (mouse-select-window last-input-event)
@@ -155,6 +153,7 @@ This allows all listing elements to be seen."
 				       (car object))))))
   (let ((inhibit-read-only t)
 	(inhibit-point-motion-hooks t)
+	(columns listing-buffer-columns)
 	(regexp "^"))
     (while columns
       (if (equal (caar columns) column)
@@ -171,8 +170,9 @@ This allows all listing elements to be seen."
 
 ;;; Element Functions.
 
-(defun listing-format-element (columns value)
-  (let ((elt-len 0)
+(defun listing-format-element (value)
+  (let ((columns listing-buffer-columns)
+	(elt-len 0)
 	(str-len 0)
 	(elt-str ""))
     (while columns
@@ -194,7 +194,7 @@ This allows all listing elements to be seen."
 				 n))))))))
     (concat elt-str "\n")))
 
-(defun listing-format-header (columns)
+(defun listing-format-header ()
   (let ((len 0))
     (concat " "
 	    (mapconcat
@@ -207,7 +207,7 @@ This allows all listing elements to be seen."
 		(propertize " "
 		 'display `(space :align-to ,(incf len (cadr col)))
 		 'face 'fixed-pitch)))
-	     columns " "))))
+	     listing-buffer-columns " "))))
 
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old :listing-element))
