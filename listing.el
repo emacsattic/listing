@@ -168,6 +168,28 @@ This allows all listing elements to be seen."
     (setq listing-buffer-sort-column
 	  (if (equal column listing-buffer-sort-column) nil column))))
 
+(defun listing-map-lines (function &optional regexp subexp)
+  (unless subexp
+    (setq subexp 0))
+  (save-excursion
+    (save-restriction
+      (let ((inhibit-read-only t)
+	    (inhibit-point-motion-hooks t))
+	(widen)
+	(goto-char (point-min))
+	(while (save-excursion
+		 (re-search-forward (or regexp "^[^\n]*\n") nil t))
+	  (funcall function
+		   (text-properties-at (match-beginning subexp))
+		   (match-beginning subexp)
+		   (match-end subexp))
+	  (forward-line))))))
+
+(defun listing-map-elements (function)
+  (listing-map-lines
+   (lambda (props start end)
+     (funcall function (plist-get props :listing-element)))))
+
 ;;; Element Functions.
 
 (defun listing-format-element (value)
