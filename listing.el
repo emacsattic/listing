@@ -89,8 +89,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 ;;; Local Variables.
 
-(defvar listing-view-element-follow-p nil)
-(make-variable-buffer-local 'listing-view-element-follow-p)
+;; Local in Listing Buffers.
 
 (defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
@@ -106,6 +105,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defvar listing-buffer-sort-column nil)
 (make-variable-buffer-local 'listing-buffer-sort-column)
+
+(defvar listing-view-buffer-follow-p nil)
+(make-variable-buffer-local 'listing-view-buffer-follow-p)
+
+;; Local in View Buffers.
 
 (defvar listing-view-buffer-element nil)
 (make-variable-buffer-local 'listing-view-buffer-element)
@@ -260,7 +264,7 @@ This allows all listing elements to be seen."
   (let ((old-elt (get-text-property old :listing-element))
 	(new-elt (get-text-property new :listing-element))
 	window buffer)
-    (when (and listing-view-element-follow-p
+    (when (and listing-view-buffer-follow-p
 	       (not (eq old-elt new-elt))
 	       (not (invisible-p new))
 	       (not (bound-and-true-p isearch-mode)))
