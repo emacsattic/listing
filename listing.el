@@ -168,6 +168,21 @@ This allows all listing elements to be seen."
     (setq listing-buffer-sort-column
 	  (if (equal column listing-buffer-sort-column) nil column))))
 
+(defun listing-categorize (predicate match not)
+  (listing-map-lines
+   (lambda (props start end)
+     (let* ((elt (plist-get props :listing-element))
+	    (val (plist-get props 'invisible)))
+       (cond ((funcall predicate elt)
+	      (when match
+		(add-to-list 'val match))
+	      (setq val (remove not val)))
+	     (t
+	      (when match
+		(add-to-list 'val not))
+	      (setq val (remove match val))))
+       (put-text-property start end 'invisible val)))))
+
 (defun listing-map-lines (function &optional regexp subexp)
   (unless subexp
     (setq subexp 0))
