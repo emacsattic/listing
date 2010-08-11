@@ -53,7 +53,7 @@
 	x-stretch-cursor nil
 	buffer-invisibility-spec nil))
 
-(defun listing-create (value buffer columns
+(defun listing-create (value buffer-or-name columns
 			     &optional column mode format)
   "Insert elements of the list VALUE into BUFFER, one per line.
 
@@ -71,7 +71,7 @@ column.  ACCESSOR is a function used to extract the value for the
 respective column from each of the elements of VALUE.  It may also be a
 keyword in which case function `plist-get' is used to extract the value
 to be inserted.  LENGTH defined the minimal length of the column."
-  (with-current-buffer (or buffer (current-buffer))
+  (with-current-buffer (get-buffer-create buffer-or-name)
     (let ((inhibit-read-only t)
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
