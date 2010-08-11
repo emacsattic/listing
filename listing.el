@@ -75,6 +75,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
     (let ((inhibit-read-only t)
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
+      (buffer-disable-undo)
       (listing-insert columns value)
       (funcall (or mode 'listing-mode))
       (listing-sort columns column)
