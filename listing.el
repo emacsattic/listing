@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100811
+;; Updated: 20100812
 ;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -253,14 +253,15 @@ This allows all listing elements to be seen."
 	(incf obj-length (length (match-string 0 object))))
       (let ((col (pop columns))
 	    (str (match-string 1 object)))
-	(incf line-length (1+ (cadr col)))
-	(incf text-length (1+ (length str)))
+	(incf line-length (cadr col))
+	(incf text-length (length str))
 	(when (match-string 2 object)
 	  (put-text-property
 	   (match-beginning 2) (match-end 2) 'display
 	   (list 'space :width
 		 (let ((space (1+ (max 0 (- line-length text-length)))))
 		   (incf text-length space)
+		   (incf line-length)
 		   space))
 	   object))))
     object))
