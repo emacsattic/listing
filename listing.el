@@ -198,32 +198,40 @@ This allows all listing elements to be seen."
 
 (defun listing-align ()
   (setq header-line-format (listing-format-header))
-  (listing-map-lines (lambda (props start end)
-		       (listing-align-element))))
-
-(defun listing-categorize (predicate match not)
   (listing-map-lines
+   "Aligning columns..."
+   (lambda (props start end)
+     (listing-align-element))))
+
+(defun listing-categorize (rules)
+  (listing-map-lines
+   "Categorizing elements..."
    (lambda (props start end)
      (let* ((elt (plist-get props 'listing-element))
 	    (val (plist-get props 'invisible)))
-       (cond ((funcall predicate elt)
-	      (when match
-		(add-to-list 'val match))
-	      (setq val (remove not val)))
-	     (t
-	      (when match
-		(add-to-list 'val not))
-	      (setq val (remove match val))))
+       (dolist (rule rules)
+	 (destructuring-bind (predicate match not) rule
+	   (cond ((funcall predicate elt)
+		  (when match
+		    (add-to-list 'val match))
+		  (setq val (remove not val)))
+		 (t
+		  (when match
+		    (add-to-list 'val not))
+		  (setq val (remove match val))))))
        (put-text-property start end 'invisible val)))))
 
-(defun listing-map-lines (function &optional regexp subexp)
+(defun listing-map-lines (message function &optional regexp subexp)
   (unless subexp
     (setq subexp 0))
   (save-excursion
     (save-restriction
+      (widen)
       (let ((inhibit-read-only t)
-	    (inhibit-point-motion-hooks t))
-	(widen)
+	    (inhibit-point-motion-hooks t)
+	    (idx 0)
+	    (progress (make-progress-reporter
+		       message 0 (count-lines (point-min) (point-max)))))
 	(goto-char (point-min))
 	(while (save-excursion
 		 (re-search-forward (or regexp "^[^\n]*\n") nil t))
@@ -231,10 +239,13 @@ This allows all listing elements to be seen."
 		   (text-properties-at (match-beginning subexp))
 		   (match-beginning subexp)
 		   (match-end subexp))
-	  (forward-line))))))
+	  (forward-line)
+	  (progress-reporter-update progress (incf idx)))
+	(progress-reporter-done progress)))))
 
-(defun listing-map-elements (function)
+(defun listing-map-elements (message function)
   (listing-map-lines
+   message
    (lambda (props start end)
      (funcall function (plist-get props 'listing-element)))))
 
