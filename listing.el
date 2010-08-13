@@ -54,7 +54,8 @@
 	x-stretch-cursor nil
 	buffer-invisibility-spec '(t)))
 
-(defun listing-create (value buffer-or-name columns &optional column mode)
+(defun listing-create (value buffer-or-name columns
+			     &optional column mode nosort)
   "Insert elements of the list VALUE into BUFFER, one per line.
 
 MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
@@ -84,7 +85,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		      (copy-list column))
 		    columns))
       (listing-insert value)
-      (listing-sort column)
+      (unless nosort
+	(listing-sort column))
       (set-buffer-modified-p nil)
       (listing-align)
       (goto-char (point-min))
