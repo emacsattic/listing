@@ -132,7 +132,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defun listing-view-element ()
   (interactive)
   (funcall listing-view-element-function
-	   (get-text-property (point) :listing-element)))
+	   (get-text-property (point) 'listing-element)))
 
 (defun listing-widen (&optional widen)
   "Remove restrictions (narrowing) from current listing buffer.
@@ -204,7 +204,7 @@ This allows all listing elements to be seen."
 (defun listing-categorize (predicate match not)
   (listing-map-lines
    (lambda (props start end)
-     (let* ((elt (plist-get props :listing-element))
+     (let* ((elt (plist-get props 'listing-element))
 	    (val (plist-get props 'invisible)))
        (cond ((funcall predicate elt)
 	      (when match
@@ -236,7 +236,7 @@ This allows all listing elements to be seen."
 (defun listing-map-elements (function)
   (listing-map-lines
    (lambda (props start end)
-     (funcall function (plist-get props :listing-element)))))
+     (funcall function (plist-get props 'listing-element)))))
 
 ;;; Row Functions.
 
@@ -261,7 +261,7 @@ This allows all listing elements to be seen."
 				  (list (listing-column-symbol column)))
 		      (unless columns "\n")))))
   (propertize text
-	      :listing-element elt
+	      'listing-element elt
 	      'point-entered 'listing-line-entered)))
 
 (defun listing-format-header ()
@@ -307,8 +307,8 @@ This allows all listing elements to be seen."
     header))
 
 (defun listing-line-entered (old new)
-  (let ((old-elt (get-text-property old :listing-element))
-	(new-elt (get-text-property new :listing-element))
+  (let ((old-elt (get-text-property old 'listing-element))
+	(new-elt (get-text-property new 'listing-element))
 	window buffer)
     (when (and listing-view-buffer-follow-p
 	       (not (eq old-elt new-elt))
