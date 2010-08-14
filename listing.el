@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100813
+;; Updated: 20100814
 ;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -191,6 +191,7 @@ This allows all listing elements to be seen."
 		columns nil)
 	(setq regexp (concat regexp "[^\037\n]*\037")
 	      columns (cdr columns))))
+    (setq regexp (concat regexp "\\(\037[^\037\n]*\n\\)*"))
     (sort-regexp-fields (equal column listing-buffer-sort-column)
 			regexp "\\1"
 			(or from (point-min))
