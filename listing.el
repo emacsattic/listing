@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100814
+;; Updated: 20100816
 ;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -170,9 +170,7 @@ This allows all listing elements to be seen."
 
 (defun listing-insert (value)
   (mapc-with-progress-reporter "Inserting elements..."
-			       (lambda (elt)
-				 (insert (listing-format-element elt)))
-			       value))
+			       'listing-insert-element value))
 
 (defun listing-sort (column &optional from to)
   (interactive
@@ -254,8 +252,8 @@ This allows all listing elements to be seen."
 
 ;;; Row Functions.
 
-(defun listing-format-element (elt)
-  (let (text (columns listing-buffer-columns))
+(defun listing-insert-element (elt)
+  (let ((columns listing-buffer-columns))
     (while columns
       (let* ((column (pop columns))
 	     (face   (when listing-element-font-function
@@ -268,15 +266,14 @@ This allows all listing elements to be seen."
 	  (dotimes (i (length string))
 	    (unless (get-char-property i 'face string)
 	      (put-text-property i (1+ i) 'face face string))))
-	(setq text
-	      (concat text
-		      (propertize (concat string (when columns "\037"))
-				  'invisible
-				  (list (listing-column-symbol column)))
-		      (unless columns "\n")))))
-  (propertize text
-	      'listing-element elt
-	      'point-entered 'listing-line-entered)))
+	(insert
+	 (propertize
+	  (concat (propertize (concat string (when columns "\037"))
+			      'invisible
+			      (list (listing-column-symbol column)))
+		  (unless columns "\n"))
+	  'listing-element elt
+	  'point-entered 'listing-line-entered))))))
 
 (defun listing-format-header ()
   (let (text (columns listing-buffer-columns))
