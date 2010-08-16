@@ -147,7 +147,7 @@ This allows all listing elements to be seen."
 
 (defun listing-hide-column (column)
   (interactive
-   (list (completing-read "Column: "
+   (list (completing-read "Hide column: "
 			  (mapcan (lambda (col)
 				    (when (caddr col)
 				      (list (car col))))
@@ -159,7 +159,7 @@ This allows all listing elements to be seen."
 
 (defun listing-show-column (column)
   (interactive
-   (list (completing-read "Column: "
+   (list (completing-read "Show column: "
 			  (mapcan (lambda (col)
 				    (unless (caddr col)
 				      (list (car col))))
