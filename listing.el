@@ -105,6 +105,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-element-font-function nil)
 (make-variable-buffer-local 'listing-element-font-function)
 
+(defvar listing-invisibility-setup nil)
+(make-variable-buffer-local 'listing-invisibility-setup)
+
 (defvar listing-buffer-columns nil)
 (make-variable-buffer-local 'listing-buffer-columns)
 
@@ -255,9 +258,13 @@ This allows all listing elements to be seen."
 (defun listing-insert-element (elt)
   (let ((face (when listing-element-font-function
 		(funcall listing-element-font-function elt)))
+	(invisible (mapcan (lambda (fn)
+			     (funcall fn elt))
+			   listing-invisibility-setup))
 	(columns listing-buffer-columns))
     (while columns
       (let* ((column (pop columns))
+	     (colsym (listing-column-symbol column))
 	     (value  (funcall (nth 3 column) elt))
 	     (string (if (stringp value)
 			 (copy-sequence value)
@@ -267,8 +274,9 @@ This allows all listing elements to be seen."
 	  (concat (propertize
 		   (concat string (when columns "\037"))
 		   'face (or (get-text-property 0 'face string) face)
-		   'invisible (list (listing-column-symbol column)))
-		  (unless columns "\n"))
+		   'invisible (cons colsym invisible))
+		  (unless columns
+		    (propertize "\n" 'invisible invisible)))
 	  'listing-element elt
 	  'point-entered 'listing-line-entered))))))
 
