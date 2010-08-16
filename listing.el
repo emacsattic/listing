@@ -207,24 +207,6 @@ This allows all listing elements to be seen."
    (lambda (props start end)
      (listing-align-element))))
 
-(defun listing-categorize (rules)
-  (listing-map-lines
-   "Categorizing elements..."
-   (lambda (props start end)
-     (let* ((elt (plist-get props 'listing-element))
-	    (val (plist-get props 'invisible)))
-       (dolist (rule rules)
-	 (destructuring-bind (predicate match not) rule
-	   (cond ((funcall predicate elt)
-		  (when match
-		    (add-to-list 'val match))
-		  (setq val (remove not val)))
-		 (t
-		  (when match
-		    (add-to-list 'val not))
-		  (setq val (remove match val))))))
-       (put-text-property start end 'invisible val)))))
-
 (defun listing-map-lines (message function &optional regexp subexp)
   (unless subexp
     (setq subexp 0))
