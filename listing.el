@@ -253,24 +253,21 @@ This allows all listing elements to be seen."
 ;;; Row Functions.
 
 (defun listing-insert-element (elt)
-  (let ((columns listing-buffer-columns))
+  (let ((face (when listing-element-font-function
+		(funcall listing-element-font-function elt)))
+	(columns listing-buffer-columns))
     (while columns
       (let* ((column (pop columns))
-	     (face   (when listing-element-font-function
-		       (funcall listing-element-font-function elt)))
 	     (value  (funcall (nth 3 column) elt))
 	     (string (if (stringp value)
 			 (copy-sequence value)
 		       (prin1-to-string value))))
-	(when face
-	  (dotimes (i (length string))
-	    (unless (get-char-property i 'face string)
-	      (put-text-property i (1+ i) 'face face string))))
 	(insert
 	 (propertize
-	  (concat (propertize (concat string (when columns "\037"))
-			      'invisible
-			      (list (listing-column-symbol column)))
+	  (concat (propertize
+		   (concat string (when columns "\037"))
+		   'face (or (get-text-property 0 'face string) face)
+		   'invisible (list (listing-column-symbol column)))
 		  (unless columns "\n"))
 	  'listing-element elt
 	  'point-entered 'listing-line-entered))))))
