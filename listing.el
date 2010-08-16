@@ -139,11 +139,16 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (funcall listing-view-element-function
 	   (get-text-property (point) 'listing-element)))
 
-(defun listing-widen (&optional widen)
-  "Remove restrictions (narrowing) from current listing buffer.
-This allows all listing elements to be seen."
-  (interactive)
-  (setq buffer-invisibility-spec nil))
+(defun listing-widen (&optional symbol)
+  (interactive
+   (unless current-prefix-arg
+     (list (intern (completing-read "Unhide elements matching: "
+				    (listing-rows-invisibility-spec)
+				    nil t)))))
+  (if symbol
+      (remove-from-invisibility-spec symbol)
+    (dolist (string (listing-rows-invisibility-spec))
+      (remove-from-invisibility-spec (intern string)))))
 
 (defun listing-hide-column (column)
   (interactive
@@ -346,6 +351,13 @@ This allows all listing elements to be seen."
 			       (nconc invisible old)
 			     (cons invisible old))))
       (incf pos))))
+
+(defun listing-rows-invisibility-spec ()
+  (mapcan (lambda (elt)
+	    (setq elt (symbol-name elt))
+	    (unless (string-match "^column:" elt)
+	      (list elt)))
+	  buffer-invisibility-spec))
 
 (provide 'listing)
 ;;; listing.el ends here
