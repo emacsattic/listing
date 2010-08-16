@@ -52,7 +52,7 @@
   (setq truncate-lines t
 	buffer-read-only t
 	x-stretch-cursor nil
-	buffer-invisibility-spec '(t)))
+	buffer-invisibility-spec nil))
 
 (defun listing-create (value buffer-or-name columns
 			     &optional column mode nosort)
@@ -353,6 +353,17 @@ This allows all listing elements to be seen."
   (intern (concat "column:" (downcase (if (listp column)
 					  (car column)
 					column)))))
+
+(defun listing-add-to-invisibile-prop (invisible)
+  (let ((pos (point))
+	(end (line-end-position)))
+    (while (<= pos end)
+      (let ((old (get-text-property pos 'invisible)))
+	(put-text-property pos (1+ pos) 'invisible
+			   (if (listp invisible)
+			       (nconc invisible old)
+			     (cons invisible old))))
+      (incf pos))))
 
 (provide 'listing)
 ;;; listing.el ends here
