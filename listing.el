@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100816
+;; Updated: 20100817
 ;; Version: 0.1.3+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -234,11 +234,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	  (progress-reporter-update progress (incf idx)))
 	(progress-reporter-done progress)))))
 
-(defun listing-map-elements (message function)
-  (listing-map-lines
-   message
-   (lambda (props start end)
-     (funcall function (plist-get props 'listing-element)))))
+(defmacro listing-map-elements (message function)
+  `(listing-map-lines
+    ,message
+    (lambda (props start end)
+      (funcall ,function (plist-get props 'listing-element)))))
 
 ;;; Row Functions.
 
