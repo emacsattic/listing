@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
 ;; Updated: 20100817
-;; Version: 0.1.3+
+;; Version: 0.2_pre1
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
