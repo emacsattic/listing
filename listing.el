@@ -94,7 +94,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 ;;; Local Variables.
 
-;; Local in Listing Buffers.
+(defvar listing-view-element-follow-p nil)
+(make-variable-buffer-local 'listing-view-element-follow-p)
 
 (defvar listing-view-element-mode nil)
 (make-variable-buffer-local 'listing-view-element-mode)
