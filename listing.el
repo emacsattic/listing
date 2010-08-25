@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100817
-;; Version: 0.2_pre1
+;; Updated: 20100825
+;; Version: 0.2_pre1+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -96,6 +96,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 ;; Local in Listing Buffers.
 
+(defvar listing-view-element-mode nil)
+(make-variable-buffer-local 'listing-view-element-mode)
+
 (defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
 
@@ -121,9 +124,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defvar listing-view-buffer-element nil)
 (make-variable-buffer-local 'listing-view-buffer-element)
-
-(defvar listing-view-buffer-element-type nil)
-(make-variable-buffer-local 'listing-view-buffer-element-type)
 
 ;;; Buttons.
 
@@ -312,14 +312,15 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old 'listing-element))
 	(new-elt (get-text-property new 'listing-element))
+	(mode listing-view-element-mode)
 	window buffer)
-    (when (and listing-view-buffer-follow-p
+    (when (and listing-view-element-follow-p
 	       (not (eq old-elt new-elt))
 	       (not (invisible-p new))
 	       (not (bound-and-true-p isearch-mode)))
       (walk-windows (lambda (win)
 		      (with-current-buffer (window-buffer win)
-			(when (and listing-view-buffer-element (not window))
+			(when (and (not window) (eq major-mode mode))
 			  (setq window win)))))
       (if window
 	  ;; Motion hook functions get called twice by design.  In case
