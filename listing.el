@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100825
+;; Updated: 20100830
 ;; Version: 0.2_pre1+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -49,10 +49,15 @@
   (use-local-map listing-mode-map)
   (hl-line-mode 1)
   (buffer-disable-undo)
+  (make-local-variable 'search-invisible)
+  (make-local-variable 'isearch-filter-predicate)
   (setq truncate-lines t
 	buffer-read-only t
 	x-stretch-cursor nil
-	buffer-invisibility-spec nil))
+	buffer-invisibility-spec nil
+	search-invisible nil
+	isearch-filter-predicate (lambda (pos d)
+				   (not (invisible-p pos)))))
 
 (defun listing-create (value buffer-or-name columns
 			     &optional column mode nosort)
