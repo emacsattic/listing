@@ -338,8 +338,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 				   listing-view-buffer-element))
 	    (listing-view-element buffer))
 	;; Here we can't prevent the message from being shown twice.
-	(let ((message-log-max nil))
-	  (funcall listing-preview-element-function new-elt))))))
+	(funcall listing-preview-element-function new-elt)))))
 
 ;;; Utitlity Functions.
 
