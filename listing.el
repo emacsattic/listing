@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
 ;; Updated: 20100906
-;; Version: 0.2_pre1+
+;; Version: 0.2_pre2
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -105,7 +105,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-view-element-mode nil)
 (make-variable-buffer-local 'listing-view-element-mode)
 
-(defvar listing-view-element-function 'ignore)
+(defvar listing-view-element-function nil)
 (make-variable-buffer-local 'listing-view-element-function)
 
 (defvar listing-preview-element nil)
@@ -267,7 +267,8 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		  (unless columns
 		    (propertize "\n" 'invisible invisible)))
 	  'listing-element elt
-	  'point-entered 'listing-line-entered))))))
+	  'point-entered (when listing-view-element-function
+			   'listing-line-entered)))))))
 
 (defun listing-format-header ()
   (let (text (columns listing-buffer-columns))
