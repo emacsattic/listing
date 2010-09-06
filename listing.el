@@ -108,7 +108,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-view-element-function 'ignore)
 (make-variable-buffer-local 'listing-view-element-function)
 
-(defvar listing-preview-element-function 'ignore)
+(defvar listing-preview-element nil)
 (make-variable-buffer-local 'listing-preview-element-function)
 
 (defvar listing-element-font-function nil)
@@ -136,7 +136,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 ;;; Commands.
 
 (defun listing-view-element (&optional buffer)
-  (interactive)
+  (interactive (list (current-buffer)))
   (funcall listing-view-element-function
 	   (get-text-property (point) 'listing-element)
 	   buffer))
@@ -328,9 +328,12 @@ to be inserted.  LENGTH defined the minimal length of the column."
       ;; used to make sure that `listing-view-element-function' gets only
       ;; called once here, but it seams more appropriate that this
       ;; function does this on it's own.
-      (if window
-	  (listing-view-element (window-buffer window))
-	(funcall listing-preview-element-function new-elt)))))
+      (cond (window
+	     (listing-view-element (window-buffer window)))
+	    ((eq listing-preview-element t)
+	     (listing-view-element))
+	    (listing-preview-element
+	     (funcall listing-preview-element new-elt))))))
 
 ;;; Utitlity Functions.
 
