@@ -126,11 +126,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-view-buffer-follow-p nil)
 (make-variable-buffer-local 'listing-view-buffer-follow-p)
 
-;; Local in View Buffers.
-
-(defvar listing-view-buffer-element nil)
-(make-variable-buffer-local 'listing-view-buffer-element)
-
 ;;; Buttons.
 
 (define-button-type 'listing-header
@@ -329,15 +324,12 @@ to be inserted.  LENGTH defined the minimal length of the column."
 		      (with-current-buffer (window-buffer win)
 			(when (and (not window) (eq major-mode mode))
 			  (setq window win)))))
+      ;; Motion hook functions like this get called twice by design.  We
+      ;; used to make sure that `listing-view-element-function' gets only
+      ;; called once here, but it seams more appropriate that this
+      ;; function does this on it's own.
       (if window
-	  ;; Motion hook functions get called twice by design.  In case
-	  ;; this is the second time this function is called we don't
-	  ;; have to do anything.
-	  (unless (equal new-elt (with-current-buffer
-				     (setq buffer (window-buffer window))
-				   listing-view-buffer-element))
-	    (listing-view-element buffer))
-	;; Here we can't prevent the message from being shown twice.
+	  (listing-view-element (window-buffer window))
 	(funcall listing-preview-element-function new-elt)))))
 
 ;;; Utitlity Functions.
