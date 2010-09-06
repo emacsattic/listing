@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100830
+;; Updated: 20100906
 ;; Version: 0.2_pre1+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -140,10 +140,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 ;;; Commands.
 
-(defun listing-view-element ()
+(defun listing-view-element (&optional buffer)
   (interactive)
   (funcall listing-view-element-function
-	   (get-text-property (point) 'listing-element)))
+	   (get-text-property (point) 'listing-element)
+	   buffer))
 
 (defun listing-widen (&optional symbol)
   (interactive
@@ -335,8 +336,7 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	  (unless (equal new-elt (with-current-buffer
 				     (setq buffer (window-buffer window))
 				   listing-view-buffer-element))
-	    (listing-view-element)
-	    (kill-buffer buffer))
+	    (listing-view-element buffer))
 	;; Here we can't prevent the message from being shown twice.
 	(let ((message-log-max nil))
 	  (funcall listing-preview-element-function new-elt))))))
