@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100906
-;; Version: 0.2_pre2
+;; Updated: 20100908
+;; Version: 0.2_pre2+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -143,10 +143,10 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defun listing-widen (&optional symbol)
   (interactive
-   (unless current-prefix-arg
-     (list (intern (completing-read "Unhide elements matching: "
-				    (listing-rows-invisibility-spec)
-				    nil t)))))
+   (let ((spec (listing-rows-invisibility-spec)))
+     (unless (or current-prefix-arg (= (length spec) 1))
+       (list (intern (completing-read "Unhide elements matching: "
+				      spec nil t))))))
   (if symbol
       (remove-from-invisibility-spec symbol)
     (dolist (string (listing-rows-invisibility-spec))
