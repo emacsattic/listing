@@ -5,7 +5,7 @@
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
 ;; Updated: 20100911
-;; Version: 0.2_pre2+
+;; Version: 0.2
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -26,9 +26,28 @@
 
 ;;; Commentary:
 
-;; This package implements the generic `listing-mode' which another mode
-;; can derive from to display a columnized list of the elements of a list.
-;; The elements should be some kind of composed values.
+;; This library provides function `listing-create' which inserts the
+;; elements in a list into a buffer, one per row.  Columns are used to
+;; display different attributes of the elements.
+
+;; How a cell's values is calculated and formatted is not restricted by
+;; this package in any way.
+
+;; In other words this library can be used by other libraries to easily
+;; create tables similar to the one created by `buffer-menu' but for
+;; arbitrary objects and without much effort.
+
+;; A very basic example:
+;;
+;;   (listing-create '((A . a) (B . b) (C . c))
+;;                   (get-buffer-create "*listing*")
+;;                   '(("upper" 5 t car)
+;;                     ("lower" 5 t cdr)))
+
+;; But it doesn't stop here.  See the function `listing-create' and
+;; variable `listing-view-element-function' for more information.  This
+;; library was created for library `epkg.el', which serves well as an
+;; example.
 
 ;;; Code:
 
@@ -62,22 +81,26 @@
 
 (defun listing-create (value buffer-or-name columns
 			     &optional column mode nosort)
-  "Insert elements of the list VALUE into BUFFER, one per line.
+  "Insert elements of the list VALUE into BUFFER, one per row.
 
-MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
-used.
+Optional MODE if specified should be a mode deriving from `listing-mode';
+it is used as the major mode of BUFFER.  Otherwise `listing-mode' is used.
 
 COLUMN is the column by which the elements are sorted initially.  COLUMNS
-specifies what parts are inserted and can optionally be used to format
-the output of each column individually. It has the form:
+specifies the columns used in BUFFER and how cell strings are extracted
+and formatted.
 
   ((HEADER LENGTH VISIBLE ACCESSOR)...)
 
-HEADER is a string used as label in the header line for the respective
-column.  ACCESSOR is a function used to extract the value for the
-respective column from each of the elements of VALUE.  It may also be a
-keyword in which case function `plist-get' is used to extract the value
-to be inserted.  LENGTH defined the minimal length of the column."
+HEADER is a string used as column label in the header line.  ACCESSOR is
+a function used to extract and format cells in the column.  It is called
+once for each element with the element as argument; the string it returns
+is inserted into the respective cell.  LENGTH defines the minimal length
+of the cells in column. ACCESSOR does not have to take care of alignment.
+
+The behavior of the listing created by this function can be further
+customized by setting various buffer local variables using the mode
+function MODE."
   (with-current-buffer (get-buffer-create buffer-or-name)
     (let ((inhibit-read-only t)
 	  (inhibit-point-motion-hooks t))
@@ -98,41 +121,100 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
-;;; Local Variables.
+;;; Buffer Local Variables.
 
-(defvar listing-view-element-follow-p nil)
-(make-variable-buffer-local 'listing-view-element-follow-p)
+(defvar listing-view-element-function nil
+  "The function used to view an element in a separate buffer.
 
-(defvar listing-view-element-mode nil)
-(make-variable-buffer-local 'listing-view-element-mode)
+This function is called by command `listing-view-element' to view details
+about the current element in a buffer different from the listing buffer.
+The buffer should be displayed in the same frame as the listing buffer but
+should not reuse it's window.  Otherwise the element buffer can not be
+automatically updated resp. replaced as described below.
 
-(defvar listing-view-element-function nil)
+This function is called with the current ELEMENT and a BUFFER as arguments.
+If BUFFER uses the mode specified by `listing-view-element-mode' then this
+function should use it to display ELEMENT or replace it with another
+buffer, whichever is suitable for the mode used in that buffer.
+
+When `listing-view-element' is called interactively and the selected frame
+does not display a element buffer then BUFFER is the listing buffer.  This
+function should then still create or make visible a element buffer in the
+selected frame.
+
+When `listing-view-element-follow-p' is non-nil this function is also
+called by function `listing-line-entered' whenever point moves to another
+element.  In this case this function is called twice which is due to the
+way motion hooks are implemented in Emacs; there is not much that can be
+done about it.
+
+This function should therefor setup a buffer local variable which allows
+it to determine whether it is being called the second time and in such a
+case just abort.
+
+Finally when variable `listing-preview-element' is t `listing-line-entered'
+calls this function without the BUFFER argument if no window of the
+selected frame displays a listing buffer.  See `listing-preview-element'
+for information about the expected behavior in this situation.
+
+See function `epkg-describe-line-package' defined in library `epkg.el'
+for an example demonstrating that just takes a few lines and is less
+complicated than it might sound.")
 (make-variable-buffer-local 'listing-view-element-function)
 
-(defvar listing-preview-element nil)
+(defvar listing-view-element-follow-p nil
+  "Whether the element buffer should be updated on movement.
+See variable `listing-view-element-function' for more information.")
+(make-variable-buffer-local 'listing-view-element-follow-p)
+
+(defvar listing-view-element-mode nil
+  "The major mode used in element buffers.
+The function specified by variable `listing-view-element-function' (which
+see) needs this to be set.")
+(make-variable-buffer-local 'listing-view-element-mode)
+
+(defvar listing-preview-element nil
+  "The function used to echo information about an element.
+If this is nil do not display information in the echo area.  If it is t
+use the function specified by variable `listing-view-element-function'
+\(which see) instead.")
 (make-variable-buffer-local 'listing-preview-element-function)
 
-(defvar listing-element-font-function nil)
+(defvar listing-element-font-function nil
+  "The function used to select the font to propertize element rows.
+This function is called for each element with the element as argument.")
 (make-variable-buffer-local 'listing-element-font-function)
 
-(defvar listing-invisibility-setup nil)
+(defvar listing-invisibility-setup nil
+  "The function used to set the `invisible' property of element rows.
+This function is called for each element with the element as argument.")
 (make-variable-buffer-local 'listing-invisibility-setup)
 
-(defvar listing-buffer-columns nil)
+(defvar listing-buffer-columns nil
+  "The columns used do display elements.
+This is a copy of the value passed to `listing-create' as COLUMNS, and is
+later changed to track state.")
 (make-variable-buffer-local 'listing-buffer-columns)
 
-(defvar listing-buffer-sort-column nil)
+(defvar listing-buffer-sort-column nil
+  "The columns by which elements are currently sorted.
+The initial value is set using the COLUMN argument of `listing-create'.")
 (make-variable-buffer-local 'listing-buffer-sort-column)
 
-;;; Commands.
+;;; User Commands.
 
 (defun listing-view-element (element &optional buffer)
+  "In Listing Buffers; view ELEMENT in a buffer.
+Interactively view the element on the current row."
   (interactive (list (get-text-property (point) 'listing-element)
 		     (or (listing-element-buffer)
 			 (current-buffer))))
   (funcall listing-view-element-function element buffer))
 
 (defun listing-widen (&optional symbol)
+  "In Listing Buffers; make hidden elements visible again.
+Interactively prompt for a narrowing to be undone.  Only hidden rows
+can be made visible; to unhide columns use `listing-show-column'."
   (interactive
    (let ((spec (listing-rows-invisibility-spec)))
      (unless (or current-prefix-arg (= (length spec) 1))
@@ -144,6 +226,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
       (remove-from-invisibility-spec (intern string)))))
 
 (defun listing-hide-column (column)
+  "In Listing Buffers; hide COLUMN.
+Interactively prompt for the column to be hidden.  COLUMN is a string
+which also has to be a key in the alist `listing-buffer-columns'."
   (interactive
    (list (completing-read "Hide column: "
 			  (mapcan (lambda (col)
@@ -156,6 +241,9 @@ to be inserted.  LENGTH defined the minimal length of the column."
   (listing-align))
 
 (defun listing-show-column (column)
+  "In Listing Buffers; unhide COLUMN.
+Interactively prompt for the column to be unhidden.  COLUMN is a string
+which also has to be a key in the alist `listing-buffer-columns'."
   (interactive
    (list (completing-read "Show column: "
 			  (mapcan (lambda (col)
@@ -316,11 +404,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	       (not (invisible-p new))
 	       (not (bound-and-true-p isearch-mode)))
       (let ((buffer (listing-element-buffer)))
-	;; Motion hook functions like this get called twice by design.
-	;; We used to make sure that `listing-view-element' gets only
-	;; called once here, but it seams more appropriate that the
-	;; function specified by `listing-view-element-function' does
-	;; this on it's own.
 	(cond (buffer
 	       (listing-view-element new-elt buffer))
 	      ((eq listing-preview-element t)
