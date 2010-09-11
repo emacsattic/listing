@@ -4,7 +4,7 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100908
+;; Updated: 20100911
 ;; Version: 0.2_pre2+
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
@@ -51,6 +51,7 @@
   (buffer-disable-undo)
   (make-local-variable 'search-invisible)
   (make-local-variable 'isearch-filter-predicate)
+  (add-hook 'isearch-mode-end-hook 'listing-isearch-end nil t)
   (setq truncate-lines t
 	buffer-read-only t
 	x-stretch-cursor nil
@@ -335,6 +336,10 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	     (listing-view-element))
 	    (listing-preview-element
 	     (funcall listing-preview-element new-elt))))))
+
+(defun listing-isearch-end ()
+  (unless isearch-mode-end-hook-quit
+    (listing-line-entered isearch-opoint (point))))
 
 ;;; Utitlity Functions.
 
