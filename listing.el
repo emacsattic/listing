@@ -124,9 +124,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-buffer-sort-column nil)
 (make-variable-buffer-local 'listing-buffer-sort-column)
 
-(defvar listing-view-buffer-follow-p nil)
-(make-variable-buffer-local 'listing-view-buffer-follow-p)
-
 ;;; Buttons.
 
 (define-button-type 'listing-header
