@@ -124,13 +124,6 @@ to be inserted.  LENGTH defined the minimal length of the column."
 (defvar listing-buffer-sort-column nil)
 (make-variable-buffer-local 'listing-buffer-sort-column)
 
-;;; Buttons.
-
-(define-button-type 'listing-header
-  :supertype 'header
-  :action (lambda (button)
-	    (listing-sort (header-button-label button))))
-
 ;;; Commands.
 
 (defun listing-view-element (element &optional buffer)
@@ -267,6 +260,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	  'listing-element elt
 	  'point-entered (when listing-view-element-function
 			   'listing-line-entered)))))))
+
+(define-button-type 'listing-header
+  :supertype 'header
+  :action (lambda (button)
+	    (listing-sort (header-button-label button))))
 
 (defun listing-format-header ()
   (let (text (columns listing-buffer-columns))
