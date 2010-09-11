@@ -67,7 +67,7 @@
 MODE is the major mode used in BUFFER.  If it is nil `listing-mode' is
 used.
 
-COLUMN is the column by which the elements are sorted initialy.  COLUMNS
+COLUMN is the column by which the elements are sorted initially.  COLUMNS
 specifies what parts are inserted and can optionally be used to format
 the output of each column individually. It has the form:
 
@@ -337,16 +337,16 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	    (listing-preview-element
 	     (funcall listing-preview-element new-elt))))))
 
-(defun listing-isearch-end ()
-  (unless isearch-mode-end-hook-quit
-    (listing-line-entered isearch-opoint (point))))
-
-;;; Utitlity Functions.
+;;; Utility Functions.
 
 (defun listing-column-symbol (column)
   (intern (concat "column:" (downcase (if (listp column)
 					  (car column)
 					column)))))
+
+(defun listing-isearch-end ()
+  (unless isearch-mode-end-hook-quit
+    (listing-line-entered isearch-opoint (point))))
 
 (defun listing-add-to-invisibile-prop (invisible)
   (let ((pos (point))
