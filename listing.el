@@ -133,11 +133,11 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 ;;; Commands.
 
-(defun listing-view-element (&optional buffer)
-  (interactive (list (current-buffer)))
-  (funcall listing-view-element-function
-	   (get-text-property (point) 'listing-element)
-	   buffer))
+(defun listing-view-element (element &optional buffer)
+  (interactive (list (get-text-property (point) 'listing-element)
+		     (or (listing-element-buffer)
+			 (current-buffer))))
+  (funcall listing-view-element-function element buffer))
 
 (defun listing-widen (&optional symbol)
   (interactive
@@ -312,27 +312,23 @@ to be inserted.  LENGTH defined the minimal length of the column."
 
 (defun listing-line-entered (old new)
   (let ((old-elt (get-text-property old 'listing-element))
-	(new-elt (get-text-property new 'listing-element))
-	(mode listing-view-element-mode)
-	window buffer)
+	(new-elt (get-text-property new 'listing-element)))
     (when (and listing-view-element-follow-p
 	       (not (eq old-elt new-elt))
 	       (not (invisible-p new))
 	       (not (bound-and-true-p isearch-mode)))
-      (walk-windows (lambda (win)
-		      (with-current-buffer (window-buffer win)
-			(when (and (not window) (eq major-mode mode))
-			  (setq window win)))))
-      ;; Motion hook functions like this get called twice by design.  We
-      ;; used to make sure that `listing-view-element-function' gets only
-      ;; called once here, but it seams more appropriate that this
-      ;; function does this on it's own.
-      (cond (window
-	     (listing-view-element (window-buffer window)))
-	    ((eq listing-preview-element t)
-	     (listing-view-element))
-	    (listing-preview-element
-	     (funcall listing-preview-element new-elt))))))
+      (let ((buffer (listing-element-buffer)))
+	;; Motion hook functions like this get called twice by design.
+	;; We used to make sure that `listing-view-element' gets only
+	;; called once here, but it seams more appropriate that the
+	;; function specified by `listing-view-element-function' does
+	;; this on it's own.
+	(cond (buffer
+	       (listing-view-element new-elt buffer))
+	      ((eq listing-preview-element t)
+	       (listing-view-element new-elt))
+	      (listing-preview-element
+	       (funcall listing-preview-element new-elt)))))))
 
 ;;; Utility Functions.
 
@@ -362,6 +358,15 @@ to be inserted.  LENGTH defined the minimal length of the column."
 	    (unless (string-match "^column:" elt)
 	      (list elt)))
 	  buffer-invisibility-spec))
+
+(defun listing-element-buffer ()
+  (let (window (mode listing-view-element-mode))
+    (walk-windows (lambda (win)
+		    (with-current-buffer (window-buffer win)
+		      (when (and (not window) (eq major-mode mode))
+			(setq window win)))))
+    (when window
+      (window-buffer window))))
 
 (provide 'listing)
 ;;; listing.el ends here
