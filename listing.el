@@ -231,11 +231,7 @@ Interactively prompt for the column to be hidden.  COLUMN is a string
 which also has to be a key in the alist `listing-buffer-columns'."
   (interactive
    (list (completing-read "Hide column: "
-			  (mapcan (lambda (col)
-				    (when (caddr col)
-				      (list (car col))))
-				  listing-buffer-columns)
-			  nil t)))
+			  (listing-columns-invisibility-spec t) nil t)))
   (add-to-invisibility-spec (listing-column-symbol column))
   (setf (caddr (assoc column listing-buffer-columns)) nil)
   (listing-align))
@@ -246,11 +242,7 @@ Interactively prompt for the column to be unhidden.  COLUMN is a string
 which also has to be a key in the alist `listing-buffer-columns'."
   (interactive
    (list (completing-read "Show column: "
-			  (mapcan (lambda (col)
-				    (unless (caddr col)
-				      (list (car col))))
-				  listing-buffer-columns)
-			  nil t)))
+			  (listing-columns-invisibility-spec) nil t)))
   (remove-from-invisibility-spec (listing-column-symbol column))
   (setf (caddr (assoc column listing-buffer-columns)) t)
   (listing-align))
@@ -439,6 +431,12 @@ which also has to be a key in the alist `listing-buffer-columns'."
 	    (unless (string-match "^column:" elt)
 	      (list elt)))
 	  buffer-invisibility-spec))
+
+(defun listing-columns-invisibility-spec (&optional reverse)
+  (mapcan (lambda (col)
+	    (when (if reverse (caddr col) (not (caddr col)))
+	      (list (car col))))
+	  listing-buffer-columns))
 
 (defun listing-element-buffer ()
   (let (window (mode listing-view-element-mode))
