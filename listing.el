@@ -206,7 +206,7 @@ The initial value is set using the COLUMN argument of `listing-create'.")
 (defun listing-view-element (element &optional buffer)
   "In Listing Buffers; view ELEMENT in a buffer.
 Interactively view the element on the current row."
-  (interactive (list (get-text-property (point) 'listing-element)
+  (interactive (list (listing-line-element)
 		     (or (listing-element-buffer)
 			 (current-buffer))))
   (funcall listing-view-element-function element buffer))
@@ -389,8 +389,8 @@ which also has to be a key in the alist `listing-buffer-columns'."
     header))
 
 (defun listing-line-entered (old new)
-  (let ((old-elt (get-text-property old 'listing-element))
-	(new-elt (get-text-property new 'listing-element)))
+  (let ((old-elt (listing-line-element old))
+	(new-elt (listing-line-element new)))
     (when (and listing-view-element-follow-p
 	       (not (eq old-elt new-elt))
 	       (not (invisible-p new))
@@ -404,6 +404,9 @@ which also has to be a key in the alist `listing-buffer-columns'."
 	       (funcall listing-preview-element new-elt)))))))
 
 ;;; Utility Functions.
+
+(defun listing-line-element (&optional pos)
+  (get-text-property (or pos (point)) 'listing-element))
 
 (defun listing-column-symbol (column)
   (intern (concat "column:" (downcase (if (listp column)
