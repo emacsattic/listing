@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20100911
-;; Version: 0.2
+;; Updated: 20101017
+;; Version: 0.2-git
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -325,7 +325,7 @@ which also has to be a key in the alist `listing-buffer-columns'."
     (while columns
       (let* ((column (pop columns))
 	     (colsym (listing-column-symbol column))
-	     (value  (funcall (nth 3 column) elt))
+	     (value  (funcall (nth 3 column) elt (butlast column)))
 	     (string (if (stringp value)
 			 (copy-sequence value)
 		       (prin1-to-string value))))
