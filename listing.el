@@ -4,8 +4,8 @@
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20101214
-;; Version: 0.2.0
+;; Updated: 20101223
+;; Version: 0.2.0-git
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -353,7 +353,7 @@ which also has to be a key in the alist `listing-buffer-columns'."
 	     (header (car column)))
 	(when (caddr column)
 	  (setq text (concat text
-			     (format-header-button
+			     (header-button-format
 			      header :type 'listing-header
 			      'help-echo (concat "mouse-1: Sort by "
 						 (downcase header)))
