@@ -1,11 +1,11 @@
 ;;; listing.el --- show columnized view of list elements
 
-;; Copyright (C) 2010  Jonas Bernoulli
+;; Copyright (C) 2010-2011  Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Updated: 20101223
-;; Version: 0.2.0-git
+;; Updated: 20110822
+;; Version: 0.2.1
 ;; Homepage: https://github.com/tarsius/listing
 ;; Keywords: convenience
 
@@ -389,6 +389,8 @@ which also has to be a key in the alist `listing-buffer-columns'."
     header))
 
 (defun listing-line-entered (old new)
+  (when (eq new (point-max))
+    (goto-char old))
   (let ((old-elt (listing-line-element old))
 	(new-elt (listing-line-element new)))
     (when (and listing-view-element-follow-p
