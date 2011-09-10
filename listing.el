@@ -57,7 +57,6 @@
   (let ((map (make-sparse-keymap)))
     (suppress-keymap map)
     (define-key map [?v] 'listing-view-element)
-    (define-key map [?w] 'listing-widen)
     map)
   "Keymap for Listing mode.")
 
@@ -67,16 +66,9 @@
   (use-local-map listing-mode-map)
   (hl-line-mode 1)
   (buffer-disable-undo)
-  (make-local-variable 'search-invisible)
-  (make-local-variable 'isearch-filter-predicate)
-  (add-hook 'isearch-mode-end-hook 'listing-isearch-end nil t)
   (setq truncate-lines t
 	buffer-read-only t
-	x-stretch-cursor nil
-	buffer-invisibility-spec nil
-	search-invisible nil
-	isearch-filter-predicate (lambda (pos d)
-				   (not (invisible-p pos)))))
+	x-stretch-cursor nil))
 
 (defun listing-create (value buffer-or-name columns
 			     &optional column mode nosort)
@@ -89,7 +81,7 @@ COLUMN is the column by which the elements are sorted initially.  COLUMNS
 specifies the columns used in BUFFER and how cell strings are extracted
 and formatted.
 
-  ((HEADER LENGTH VISIBLE ACCESSOR)...)
+  ((HEADER LENGTH ACCESSOR)...)
 
 HEADER is a string used as column label in the header line.  ACCESSOR is
 a function used to extract and format cells in the column.  It is called
@@ -105,13 +97,7 @@ function MODE."
 	  (inhibit-point-motion-hooks t))
       (erase-buffer)
       (funcall (or mode 'listing-mode))
-      (setq listing-buffer-columns
-	    (mapcar (lambda (column)
-		      (unless (caddr column)
-			(add-to-invisibility-spec
-			 (listing-column-symbol column)))
-		      (copy-list column))
-		    columns))
+      (setq listing-buffer-columns (mapcar 'copy-list columns))
       (listing-insert value)
       (unless nosort
 	(listing-sort column))
@@ -184,15 +170,9 @@ use the function specified by variable `listing-view-element-function'
 This function is called for each element with the element as argument.")
 (make-variable-buffer-local 'listing-element-font-function)
 
-(defvar listing-invisibility-setup nil
-  "The function used to set the `invisible' property of element rows.
-This function is called for each element with the element as argument.")
-(make-variable-buffer-local 'listing-invisibility-setup)
-
 (defvar listing-buffer-columns nil
   "The columns used do display elements.
-This is a copy of the value passed to `listing-create' as COLUMNS, and is
-later changed to track state.")
+This is a copy of the value passed to `listing-create' as COLUMNS.")
 (make-variable-buffer-local 'listing-buffer-columns)
 
 (defvar listing-buffer-sort-column nil
@@ -209,42 +189,6 @@ Interactively view the element on the current row."
 		     (or (listing-element-buffer)
 			 (current-buffer))))
   (funcall listing-view-element-function element buffer))
-
-(defun listing-widen (&optional symbol)
-  "In Listing Buffers; make hidden elements visible again.
-Interactively prompt for a narrowing to be undone.  Only hidden rows
-can be made visible; to unhide columns use `listing-show-column'."
-  (interactive
-   (let ((spec (listing-rows-invisibility-spec)))
-     (unless (or current-prefix-arg (= (length spec) 1))
-       (list (intern (completing-read "Unhide elements matching: "
-				      spec nil t))))))
-  (if symbol
-      (remove-from-invisibility-spec symbol)
-    (dolist (string (listing-rows-invisibility-spec))
-      (remove-from-invisibility-spec (intern string)))))
-
-(defun listing-hide-column (column)
-  "In Listing Buffers; hide COLUMN.
-Interactively prompt for the column to be hidden.  COLUMN is a string
-which also has to be a key in the alist `listing-buffer-columns'."
-  (interactive
-   (list (completing-read "Hide column: "
-			  (listing-columns-invisibility-spec t) nil t)))
-  (add-to-invisibility-spec (listing-column-symbol column))
-  (setf (caddr (assoc column listing-buffer-columns)) nil)
-  (listing-align))
-
-(defun listing-show-column (column)
-  "In Listing Buffers; unhide COLUMN.
-Interactively prompt for the column to be unhidden.  COLUMN is a string
-which also has to be a key in the alist `listing-buffer-columns'."
-  (interactive
-   (list (completing-read "Show column: "
-			  (listing-columns-invisibility-spec) nil t)))
-  (remove-from-invisibility-spec (listing-column-symbol column))
-  (setf (caddr (assoc column listing-buffer-columns)) t)
-  (listing-align))
 
 ;;; List Functions.
 
@@ -317,14 +261,11 @@ which also has to be a key in the alist `listing-buffer-columns'."
 (defun listing-insert-element (elt)
   (let ((face (when listing-element-font-function
 		(funcall listing-element-font-function elt)))
-	(invisible (mapcan (lambda (fn)
-			     (funcall fn elt))
-			   listing-invisibility-setup))
 	(columns listing-buffer-columns))
     (while columns
       (let* ((column (pop columns))
 	     (colsym (listing-column-symbol column))
-	     (value  (funcall (nth 3 column) elt (butlast column)))
+	     (value  (funcall (caddr column) elt (butlast column)))
 	     (string (if (stringp value)
 			 (copy-sequence value)
 		       (prin1-to-string value))))
@@ -332,10 +273,8 @@ which also has to be a key in the alist `listing-buffer-columns'."
 	 (propertize
 	  (concat (propertize
 		   (concat string (when columns "\037"))
-		   'face (or (get-text-property 0 'face string) face)
-		   'invisible (cons colsym invisible))
-		  (unless columns
-		    (propertize "\n" 'invisible invisible)))
+		   'face (or (get-text-property 0 'face string) face))
+		  (unless columns "\n"))
 	  'listing-element elt
 	  'point-entered (when listing-view-element-function
 			   'listing-line-entered)))))))
@@ -393,9 +332,7 @@ which also has to be a key in the alist `listing-buffer-columns'."
   (let ((old-elt (listing-line-element old))
 	(new-elt (listing-line-element new)))
     (when (and listing-view-element-follow-p
-	       (not (eq old-elt new-elt))
-	       (not (invisible-p new))
-	       (not (bound-and-true-p isearch-mode)))
+	       (not (eq old-elt new-elt)))
       (let ((buffer (listing-element-buffer)))
 	(cond (buffer
 	       (listing-view-element new-elt buffer))
@@ -410,37 +347,7 @@ which also has to be a key in the alist `listing-buffer-columns'."
   (get-text-property (or pos (point)) 'listing-element))
 
 (defun listing-column-symbol (column)
-  (intern (concat "column:" (downcase (if (listp column)
-					  (car column)
-					column)))))
-
-(defun listing-isearch-end ()
-  (unless isearch-mode-end-hook-quit
-    (listing-line-entered isearch-opoint (point))))
-
-(defun listing-add-to-invisibile-prop (invisible)
-  (let ((pos (point))
-	(end (line-end-position)))
-    (while (<= pos end)
-      (let ((old (get-text-property pos 'invisible)))
-	(put-text-property pos (1+ pos) 'invisible
-			   (if (listp invisible)
-			       (nconc invisible old)
-			     (cons invisible old))))
-      (incf pos))))
-
-(defun listing-rows-invisibility-spec ()
-  (mapcan (lambda (elt)
-	    (setq elt (symbol-name elt))
-	    (unless (string-match "^column:" elt)
-	      (list elt)))
-	  buffer-invisibility-spec))
-
-(defun listing-columns-invisibility-spec (&optional reverse)
-  (mapcan (lambda (col)
-	    (when (if reverse (caddr col) (not (caddr col)))
-	      (list (car col))))
-	  listing-buffer-columns))
+  (intern (downcase (if (listp column) (car column) column))))
 
 (defun listing-element-buffer ()
   (let (window (mode listing-view-element-mode))
