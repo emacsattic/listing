@@ -223,14 +223,6 @@ Interactively view the element on the current row."
 
 (defun listing-align ()
   (setq header-line-format (listing-format-header))
-  (listing-map-lines
-   "Aligning columns..."
-   (lambda (props start end)
-     (listing-align-element))))
-
-(defun listing-map-lines (message function &optional regexp subexp)
-  (unless subexp
-    (setq subexp 0))
   (save-excursion
     (save-restriction
       (widen)
@@ -238,23 +230,15 @@ Interactively view the element on the current row."
 	    (inhibit-point-motion-hooks t)
 	    (idx 0)
 	    (progress (make-progress-reporter
-		       message 0 (count-lines (point-min) (point-max)))))
+		       "Aligning columns..."
+		       0 (count-lines (point-min) (point-max)))))
 	(goto-char (point-min))
 	(while (save-excursion
-		 (re-search-forward (or regexp "^[^\n]*\n") nil t))
-	  (funcall function
-		   (text-properties-at (match-beginning subexp))
-		   (match-beginning subexp)
-		   (match-end subexp))
+		 (re-search-forward "^[^\n]*\n" nil t))
+	  (listing-align-element)
 	  (forward-line)
 	  (progress-reporter-update progress (incf idx)))
 	(progress-reporter-done progress)))))
-
-(defmacro listing-map-elements (message function)
-  `(listing-map-lines
-    ,message
-    (lambda (props start end)
-      (funcall ,function (plist-get props 'listing-element)))))
 
 ;;; Row Functions.
 
