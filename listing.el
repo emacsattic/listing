@@ -1,12 +1,13 @@
 ;;; listing.el --- show columnized view of list elements
 
+;; *** This library is obsolete.  Use `tabulated-list' instead. ***
+
 ;; Copyright (C) 2010-2011  Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Created: 20100605
-;; Version: 0.2.1-git
-;; Homepage: https://github.com/tarsius/listing
-;; Keywords: convenience
+;; Version: 0.3.0
+;; Keywords: extensions, lisp
 
 ;; This file is not part of GNU Emacs.
 
